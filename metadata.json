@@ -1,0 +1,6 @@
+{
+  "name": "ResumeRank AI",
+  "description": "AI-Powered Resume Intelligence — Analyze, score, and optimize resumes against job descriptions using hybrid NLP and Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
