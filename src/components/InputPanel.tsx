@@ -12,8 +12,7 @@ import {
   Trash2,
   UploadCloud,
 } from 'lucide-react';
-import { JOB_ROLES } from '../data/samples';
-import type { JobRole } from '../types/analysis';
+import { JOB_ROLES, type JobRole } from '../types/analysis';
 import { formatFileSize } from '../utils/pdfExtractor';
 
 interface InputPanelProps {
@@ -22,7 +21,6 @@ interface InputPanelProps {
   pageCount: number | null;
   wordCount: number | null;
   resumeText: string;
-  isSampleResume: boolean;
   isExtractingPdf: boolean;
   jobRole: JobRole;
   jobDescription: string;
@@ -30,8 +28,6 @@ interface InputPanelProps {
   errorMessage: string | null;
   onSelectPdf: (file: File) => void;
   onRemoveResume: () => void;
-  onLoadSampleResume: () => void;
-  onLoadSampleJd: () => void;
   onJobRoleChange: (role: JobRole) => void;
   onJobDescriptionChange: (text: string) => void;
   onAnalyze: () => void;
@@ -43,7 +39,6 @@ export function InputPanel({
   pageCount,
   wordCount,
   resumeText,
-  isSampleResume,
   isExtractingPdf,
   jobRole,
   jobDescription,
@@ -51,8 +46,6 @@ export function InputPanel({
   errorMessage,
   onSelectPdf,
   onRemoveResume,
-  onLoadSampleResume,
-  onLoadSampleJd,
   onJobRoleChange,
   onJobDescriptionChange,
   onAnalyze,
@@ -89,24 +82,13 @@ export function InputPanel({
       <div className="space-y-4">
         {/* 1. Resume PDF Upload */}
         <div>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#6366F1]/15 text-[#6366F1]">
-                <UploadCloud className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <h2 className="font-display text-[18px] font-bold tracking-[-0.02em] text-slate-900 dark:text-white">
-                Resume Upload
-              </h2>
-            </div>
-
-            <button
-              type="button"
-              onClick={onLoadSampleResume}
-              disabled={isAnalyzing || isExtractingPdf}
-              className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0284C7] hover:text-[#6366F1] dark:text-[#22D3EE] dark:hover:text-white disabled:opacity-50 transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] rounded px-1.5 py-1"
-            >
-              Load Sample Resume
-            </button>
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#6366F1]/15 text-[#6366F1]">
+              <UploadCloud className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <h2 className="font-display text-[18px] font-bold tracking-[-0.02em] text-slate-900 dark:text-white">
+              Resume Upload
+            </h2>
           </div>
 
           <input
@@ -180,7 +162,7 @@ export function InputPanel({
                       {fileName}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600 dark:text-[#94A3B8] tabular-nums">
-                      <span>{fileSize ? formatFileSize(fileSize) : 'Sample'}</span>
+                      <span>{fileSize ? formatFileSize(fileSize) : 'PDF'}</span>
                       {pageCount !== null && (
                         <>
                           <span aria-hidden="true">·</span>
@@ -193,12 +175,6 @@ export function InputPanel({
                         <>
                           <span aria-hidden="true">·</span>
                           <span>{wordCount} words</span>
-                        </>
-                      )}
-                      {isSampleResume && (
-                        <>
-                          <span aria-hidden="true">·</span>
-                          <span className="text-[#0284C7] dark:text-[#22D3EE]">Demo</span>
                         </>
                       )}
                     </div>
@@ -278,27 +254,16 @@ export function InputPanel({
 
         {/* 3. Job Description */}
         <div className="pt-2">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#22D3EE]/15 text-[#0284C7] dark:text-[#22D3EE]">
-                <FileText className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <label
-                htmlFor="job-description-input"
-                className="font-display text-[18px] font-bold tracking-[-0.02em] text-slate-900 dark:text-white"
-              >
-                Job Description
-              </label>
-            </div>
-
-            <button
-              type="button"
-              onClick={onLoadSampleJd}
-              disabled={isAnalyzing}
-              className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0284C7] hover:text-[#6366F1] dark:text-[#22D3EE] dark:hover:text-white disabled:opacity-50 transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] rounded px-1.5 py-1"
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#22D3EE]/15 text-[#0284C7] dark:text-[#22D3EE]">
+              <FileText className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <label
+              htmlFor="job-description-input"
+              className="font-display text-[18px] font-bold tracking-[-0.02em] text-slate-900 dark:text-white"
             >
-              Load Sample JD
-            </button>
+              Job Description
+            </label>
           </div>
 
           <textarea
@@ -339,7 +304,7 @@ export function InputPanel({
             {isAnalyzing ? (
               <>
                 <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
-                <span>AI is analyzing...</span>
+                <span>Calling Gemini AI...</span>
               </>
             ) : (
               <>

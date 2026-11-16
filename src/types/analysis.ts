@@ -5,6 +5,14 @@ export type JobRole =
   | 'Designer'
   | 'Other';
 
+export const JOB_ROLES: JobRole[] = [
+  'Software Engineer',
+  'Data Analyst',
+  'Marketing',
+  'Designer',
+  'Other',
+];
+
 export type VerdictLabel = 'Strong Match' | 'Moderate Match' | 'Weak Match';
 
 export type ImportanceLevel = 'High' | 'Medium' | 'Low';

@@ -1,12 +1,20 @@
 import { Moon, RotateCcw, Sun } from 'lucide-react';
 
 interface HeaderProps {
+  hasApiKey: boolean;
   isDarkMode: boolean;
   onToggleTheme: () => void;
   onNewAnalysis: () => void;
+  onJumpToApiKey: () => void;
 }
 
-export function Header({ isDarkMode, onToggleTheme, onNewAnalysis }: HeaderProps) {
+export function Header({
+  hasApiKey,
+  isDarkMode,
+  onToggleTheme,
+  onNewAnalysis,
+  onJumpToApiKey,
+}: HeaderProps) {
   return (
     <header className="no-print sticky top-0 z-40 h-[72px] border-b border-slate-200/80 bg-white/80 backdrop-blur-xl dark:border-[#1E293B] dark:bg-[#0B0F19]/80">
       <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between gap-4 px-4 lg:px-8">
@@ -38,17 +46,27 @@ export function Header({ isDarkMode, onToggleTheme, onNewAnalysis }: HeaderProps
           </span>
         </a>
 
-        {/* Right: API Status + Dark Mode Toggle + Reset */}
+        {/* Right: Real API Key Status + Dark Mode Toggle + Reset */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="hidden sm:inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-3.5 py-1.5 dark:border-[#1E293B] dark:bg-[#111827]/90">
+          <button
+            type="button"
+            onClick={onJumpToApiKey}
+            className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
+              hasApiKey
+                ? 'border-[#10B981]/35 bg-[#10B981]/10 text-[#059669] dark:text-[#10B981]'
+                : 'border-[#F43F5E]/35 bg-[#F43F5E]/10 text-[#E11D48] dark:text-[#F43F5E]'
+            }`}
+          >
             <span
               aria-hidden="true"
-              className="h-2 w-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.75)]"
+              className={`h-2 w-2 rounded-full ${
+                hasApiKey
+                  ? 'bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.75)]'
+                  : 'bg-[#F43F5E] shadow-[0_0_8px_rgba(244,63,94,0.75)]'
+              }`}
             />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700 dark:text-[#CBD5E1]">
-              Gemini API Ready
-            </span>
-          </div>
+            <span>{hasApiKey ? 'API Key Connected' : 'No API Key'}</span>
+          </button>
 
           <button
             type="button"

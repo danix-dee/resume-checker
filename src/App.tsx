@@ -1,19 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { ApiKeyCard } from './components/ApiKeyCard';
 import { Header } from './components/Header';
 import { HistorySidebar } from './components/HistorySidebar';
 import { InputPanel } from './components/InputPanel';
 import { ResultsDashboard } from './components/ResultsDashboard';
-import {
-  SAMPLE_JOB_DESCRIPTION,
-  SAMPLE_RESUME_FILE_NAME,
-  SAMPLE_RESUME_TEXT,
-} from './data/samples';
 import type { HistoryEntry, JobRole, ResumeAnalysisResult } from './types/analysis';
+import { analyzeResumeWithGemini } from './utils/geminiClient';
 import { extractTextFromPdf, validatePdfFile } from './utils/pdfExtractor';
 
+const API_KEY_STORAGE_KEY = 'gemini_api_key';
 const HISTORY_STORAGE_KEY = 'resumerank_history_v1';
 const THEME_STORAGE_KEY = 'resumerank_theme_v1';
 const MAX_HISTORY_ITEMS = 3;
+
+function loadSavedApiKey(): string {
+  try {
+    return localStorage.getItem(API_KEY_STORAGE_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
 
 function loadSavedHistory(): HistoryEntry[] {
   try {
@@ -39,13 +46,26 @@ function loadSavedTheme(): boolean {
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(loadSavedTheme);
 
+  // API Key state (loaded from localStorage "gemini_api_key", never hardcoded)
+  const [savedApiKey, setSavedApiKey] = useState<string>(loadSavedApiKey);
+  const [apiKeyInput, setApiKeyInput] = useState<string>(loadSavedApiKey);
+  const [highlightApiKeyError, setHighlightApiKeyError] = useState<boolean>(false);
+
+  const apiKeyCardRef = useRef<HTMLElement | null>(null);
+  const apiKeyInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Toast notifications
+  const [toast, setToast] = useState<{
+    type: 'error' | 'success';
+    message: string;
+  } | null>(null);
+
   // Input state
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [wordCount, setWordCount] = useState<number | null>(null);
   const [resumeText, setResumeText] = useState<string>('');
-  const [isSampleResume, setIsSampleResume] = useState<boolean>(false);
   const [isExtractingPdf, setIsExtractingPdf] = useState<boolean>(false);
 
   const [jobRole, setJobRole] = useState<JobRole>('Software Engineer');
@@ -58,7 +78,7 @@ export default function App() {
   const [activeFileNameForResult, setActiveFileNameForResult] = useState<string | null>(null);
   const [activeJobRoleForResult, setActiveJobRoleForResult] = useState<JobRole>('Software Engineer');
 
-  // History state (last 3 analyses)
+  // History state (last 3 real analyses)
   const [history, setHistory] = useState<HistoryEntry[]>(loadSavedHistory);
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
 
@@ -70,6 +90,54 @@ export default function App() {
       // Ignore storage errors
     }
   }, [isDarkMode]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const showToast = (type: 'error' | 'success', message: string) => {
+    setToast({ type, message });
+  };
+
+  const scrollToApiKeyBox = (focusInput = true) => {
+    apiKeyCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (focusInput) {
+      setTimeout(() => apiKeyInputRef.current?.focus(), 350);
+    }
+  };
+
+  const handleSaveApiKey = () => {
+    const trimmed = apiKeyInput.trim();
+    if (!trimmed) {
+      setHighlightApiKeyError(true);
+      showToast('error', 'Please paste a Gemini API Key before saving.');
+      return;
+    }
+    try {
+      localStorage.setItem(API_KEY_STORAGE_KEY, trimmed);
+    } catch {
+      // Ignore storage errors
+    }
+    setSavedApiKey(trimmed);
+    setApiKeyInput(trimmed);
+    setHighlightApiKeyError(false);
+    setErrorMessage(null);
+    showToast('success', 'Gemini API Key saved locally.');
+  };
+
+  const handleClearApiKey = () => {
+    try {
+      localStorage.removeItem(API_KEY_STORAGE_KEY);
+    } catch {
+      // Ignore storage errors
+    }
+    setSavedApiKey('');
+    setApiKeyInput('');
+    setHighlightApiKeyError(false);
+    showToast('success', 'Gemini API Key cleared.');
+  };
 
   const persistHistory = (items: HistoryEntry[]) => {
     const capped = items.slice(0, MAX_HISTORY_ITEMS);
@@ -97,7 +165,6 @@ export default function App() {
       setPageCount(extracted.pageCount);
       setWordCount(extracted.wordCount);
       setResumeText(extracted.text);
-      setIsSampleResume(false);
     } catch (err) {
       const msg =
         err instanceof Error
@@ -120,31 +187,7 @@ export default function App() {
     setPageCount(null);
     setWordCount(null);
     setResumeText('');
-    setIsSampleResume(false);
     setErrorMessage(null);
-  };
-
-  const handleLoadSampleResume = () => {
-    setErrorMessage(null);
-    const words = SAMPLE_RESUME_TEXT.split(/\s+/).filter(Boolean).length;
-    setFileName(SAMPLE_RESUME_FILE_NAME);
-    setFileSize(null);
-    setPageCount(1);
-    setWordCount(words);
-    setResumeText(SAMPLE_RESUME_TEXT);
-    setIsSampleResume(true);
-    setJobRole('Software Engineer');
-  };
-
-  const handleLoadSampleJd = () => {
-    setErrorMessage(null);
-    setJobDescription(SAMPLE_JOB_DESCRIPTION);
-    setJobRole('Software Engineer');
-  };
-
-  const handleLoadFullDemo = () => {
-    handleLoadSampleResume();
-    handleLoadSampleJd();
   };
 
   const handleReset = () => {
@@ -159,40 +202,56 @@ export default function App() {
 
   const handleAnalyze = async () => {
     setErrorMessage(null);
+    setHighlightApiKeyError(false);
 
+    // Step 1: Verify real user API key exists
+    const activeKey = apiKeyInput.trim() || savedApiKey.trim();
+    if (!activeKey) {
+      setHighlightApiKeyError(true);
+      showToast('error', 'Please add your Gemini API Key first');
+      scrollToApiKeyBox(true);
+      return;
+    }
+
+    // Persist entered key if user clicked Analyze immediately after pasting
+    if (activeKey !== savedApiKey) {
+      setSavedApiKey(activeKey);
+      try {
+        localStorage.setItem(API_KEY_STORAGE_KEY, activeKey);
+      } catch {
+        // Ignore storage errors
+      }
+    }
+
+    // Step 2: Verify PDF uploaded and JD pasted
     if (!resumeText.trim()) {
-      setErrorMessage('Please upload resume PDF');
+      const msg = 'Please upload resume PDF';
+      setErrorMessage(msg);
+      showToast('error', msg);
       return;
     }
 
     if (!jobDescription.trim()) {
-      setErrorMessage('Please paste Job Description');
+      const msg = 'Please paste Job Description';
+      setErrorMessage(msg);
+      showToast('error', msg);
       return;
     }
 
+    // Step 3 & 4: Call real Gemini API with loading state
     setIsAnalyzing(true);
     setActiveHistoryId(null);
 
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeText,
-          jobDescription,
-          jobRole,
-        }),
+      const result = await analyzeResumeWithGemini({
+        apiKey: activeKey,
+        resumeText,
+        jobDescription,
+        jobRole,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || `Analysis failed with status ${response.status}.`);
-      }
-
-      const result = data as ResumeAnalysisResult;
+      // Step 5: Render ONLY real data returned by Gemini
       const resolvedFileName = fileName ?? 'resume.pdf';
-
       setAnalysisResult(result);
       setActiveFileNameForResult(resolvedFileName);
       setActiveJobRoleForResult(jobRole);
@@ -214,8 +273,13 @@ export default function App() {
       const msg =
         err instanceof Error
           ? err.message
-          : 'Unable to complete AI analysis. Please try again.';
+          : 'Gemini API request failed. Please verify your API Key and try again.';
       setErrorMessage(msg);
+      showToast('error', msg);
+      if (msg.toLowerCase().includes('invalid api key')) {
+        setHighlightApiKeyError(true);
+        scrollToApiKeyBox(false);
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -251,13 +315,43 @@ export default function App() {
   return (
     <div className="saas-mesh-bg flex min-h-screen flex-col text-slate-900 dark:text-[#CBD5E1]">
       <Header
+        hasApiKey={savedApiKey.trim().length > 0}
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode((prev) => !prev)}
         onNewAnalysis={handleReset}
+        onJumpToApiKey={() => scrollToApiKeyBox(true)}
       />
 
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className={`no-print fixed right-4 top-[88px] z-50 flex max-w-md items-start gap-3 rounded-xl border px-4 py-3.5 shadow-xl backdrop-blur-xl ${
+            toast.type === 'error'
+              ? 'border-[#F43F5E]/50 bg-[#111827]/95 text-[#FDA4AF] shadow-[0_8px_32px_rgba(244,63,94,0.25)]'
+              : 'border-[#10B981]/50 bg-[#111827]/95 text-[#6EE7B7] shadow-[0_8px_32px_rgba(16,185,129,0.2)]'
+          }`}
+        >
+          {toast.type === 'error' ? (
+            <AlertCircle className="mt-0.5 h-4.5 w-4.5 shrink-0 text-[#F43F5E]" aria-hidden="true" />
+          ) : (
+            <CheckCircle2 className="mt-0.5 h-4.5 w-4.5 shrink-0 text-[#10B981]" aria-hidden="true" />
+          )}
+          <span className="text-sm font-medium text-white">{toast.message}</span>
+          <button
+            type="button"
+            onClick={() => setToast(null)}
+            aria-label="Dismiss notification"
+            className="ml-2 rounded p-0.5 text-slate-400 hover:text-white cursor-pointer"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
       <main className="mx-auto w-full max-w-[1280px] flex-1 p-4 lg:p-8">
-        {/* Hero Strip with Gradient Headline + Live Stats */}
+        {/* Hero Strip */}
         <section
           aria-label="Workspace overview"
           className="no-print mb-6 rounded-[20px] border border-slate-200 bg-white/85 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/80 dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)]"
@@ -271,7 +365,7 @@ export default function App() {
                 Your Resume, Ranked by AI
               </h1>
               <p className="mt-2 max-w-xl text-[15px] leading-[1.6] text-slate-600 dark:text-[#94A3B8]">
-                Strict ATS calibration, verbatim skill proof, and actionable optimization tailored to every role.
+                Connect your Gemini API Key, upload your PDF resume, and evaluate against any real job description.
               </p>
             </div>
 
@@ -297,7 +391,24 @@ export default function App() {
           </div>
         </section>
 
-        {/* Main 2-Column SaaS Grid: Left Input + History (420px) | Right Results (1fr), gap 24px */}
+        {/* Prominent Dedicated API Key Section at TOP of Page */}
+        <ApiKeyCard
+          ref={apiKeyCardRef}
+          apiKeyInput={apiKeyInput}
+          savedApiKey={savedApiKey}
+          highlightError={highlightApiKeyError}
+          inputRef={apiKeyInputRef}
+          onApiKeyInputChange={(val) => {
+            setApiKeyInput(val);
+            if (highlightApiKeyError && val.trim()) {
+              setHighlightApiKeyError(false);
+            }
+          }}
+          onSaveKey={handleSaveApiKey}
+          onClearKey={handleClearApiKey}
+        />
+
+        {/* Main 2-Column SaaS Grid: Left Input + History (420px) | Right Results (1fr) */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr] items-start">
           <div className="no-print space-y-5">
             <InputPanel
@@ -306,7 +417,6 @@ export default function App() {
               pageCount={pageCount}
               wordCount={wordCount}
               resumeText={resumeText}
-              isSampleResume={isSampleResume}
               isExtractingPdf={isExtractingPdf}
               jobRole={jobRole}
               jobDescription={jobDescription}
@@ -314,8 +424,6 @@ export default function App() {
               errorMessage={errorMessage}
               onSelectPdf={handleSelectPdf}
               onRemoveResume={handleRemoveResume}
-              onLoadSampleResume={handleLoadSampleResume}
-              onLoadSampleJd={handleLoadSampleJd}
               onJobRoleChange={setJobRole}
               onJobDescriptionChange={setJobDescription}
               onAnalyze={handleAnalyze}
@@ -337,7 +445,7 @@ export default function App() {
               fileName={activeFileNameForResult ?? fileName}
               jobRole={activeJobRoleForResult}
               onReset={handleReset}
-              onLoadFullDemo={handleLoadFullDemo}
+              onScrollToApiKey={() => scrollToApiKeyBox(true)}
             />
           </div>
         </div>

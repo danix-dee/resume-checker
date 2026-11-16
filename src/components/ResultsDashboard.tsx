@@ -7,8 +7,10 @@ import {
   ClipboardCheck,
   Copy,
   Download,
+  FileSearch,
   FileWarning,
   HelpCircle,
+  KeyRound,
   Layers,
   Lightbulb,
   MessageSquareQuote,
@@ -29,7 +31,7 @@ interface ResultsDashboardProps {
   fileName: string | null;
   jobRole: JobRole;
   onReset: () => void;
-  onLoadFullDemo: () => void;
+  onScrollToApiKey: () => void;
 }
 
 type ResultsTab = 'overview' | 'skills' | 'ats' | 'interview';
@@ -78,7 +80,7 @@ export function ResultsDashboard({
   fileName,
   jobRole,
   onReset,
-  onLoadFullDemo,
+  onScrollToApiKey,
 }: ResultsDashboardProps) {
   const [activeTab, setActiveTab] = useState<ResultsTab>('overview');
   const [copiedReport, setCopiedReport] = useState(false);
@@ -130,7 +132,7 @@ export function ResultsDashboard({
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-display text-[18px] font-bold tracking-[-0.02em] text-slate-900 dark:text-white">
-                  Gemini is reading your resume
+                  Calling Gemini AI
                 </p>
                 <span className="inline-flex items-center gap-1 pt-1" aria-hidden="true">
                   <span className="typing-dot-1 h-1.5 w-1.5 rounded-full bg-[#22D3EE]" />
@@ -139,7 +141,7 @@ export function ResultsDashboard({
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-[#94A3B8]">
-                Evaluating keyword synonyms, verbatim evidence, and ATS alignment
+                Evaluating your resume and job description with live Gemini intelligence
               </p>
             </div>
           </div>
@@ -165,7 +167,7 @@ export function ResultsDashboard({
     );
   }
 
-  /* Empty State: Custom Vector Illustration + "Upload resume to see AI magic" */
+  /* Empty State: Strict Real-Data-Only Prompt */
   if (!result) {
     return (
       <section
@@ -173,100 +175,31 @@ export function ResultsDashboard({
         aria-label="Results dashboard empty state"
         className="flex min-h-[600px] flex-col items-center justify-center rounded-[20px] border border-slate-200 bg-white/90 p-6 sm:p-10 text-center backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85 dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)]"
       >
-        {/* Custom SaaS Geometric Illustration */}
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl border border-slate-200 bg-slate-50 dark:border-[#1E293B] dark:bg-[#0B0F19]">
           <div
             aria-hidden="true"
-            className="absolute h-36 w-36 rounded-full bg-gradient-to-tr from-[#6366F1]/25 via-[#8B5CF6]/20 to-[#22D3EE]/25 blur-2xl"
+            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#6366F1]/25 via-[#8B5CF6]/15 to-[#22D3EE]/25 blur-xl"
           />
-          <svg
-            viewBox="0 0 180 140"
-            className="relative h-36 w-44"
-            fill="none"
+          <FileSearch
+            className="relative h-12 w-12 text-[#6366F1] dark:text-[#22D3EE]"
             aria-hidden="true"
-          >
-            <rect
-              x="28"
-              y="16"
-              width="100"
-              height="112"
-              rx="14"
-              className="fill-slate-100 stroke-slate-300 dark:fill-[#0B0F19] dark:stroke-[#1E293B]"
-              strokeWidth="2"
-            />
-            <rect x="44" y="34" width="46" height="8" rx="4" fill="#6366F1" fillOpacity="0.8" />
-            <rect x="44" y="52" width="68" height="6" rx="3" className="fill-slate-300 dark:fill-[#1E293B]" />
-            <rect x="44" y="66" width="58" height="6" rx="3" className="fill-slate-300 dark:fill-[#1E293B]" />
-            <rect x="44" y="80" width="64" height="6" rx="3" className="fill-slate-300 dark:fill-[#1E293B]" />
-            <rect x="44" y="98" width="38" height="10" rx="5" fill="#10B981" fillOpacity="0.25" />
-            <circle
-              cx="128"
-              cy="88"
-              r="28"
-              className="fill-white stroke-[#6366F1] dark:fill-[#111827]"
-              strokeWidth="3"
-            />
-            <path
-              d="M117 88l7 7 15-15"
-              stroke="#22D3EE"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          />
         </div>
 
-        <h2 className="mt-4 font-display text-2xl font-bold tracking-[-0.02em] text-slate-900 dark:text-white text-balance">
-          Upload resume to see AI magic
+        <h2 className="mt-6 font-display text-2xl font-bold tracking-[-0.02em] text-slate-900 dark:text-white text-balance">
+          No Analysis Yet
         </h2>
         <p className="mt-3 max-w-md text-[15px] leading-[1.6] text-slate-600 dark:text-[#94A3B8]">
-          Drop your PDF resume and paste a job description on the left to unlock strict ATS scoring,
-          verbatim skill proof, and tailored interview preparation.
+          Add your API Key, upload resume, paste JD and click Analyze to see real AI results
         </p>
-
-        <div className="mt-7 grid w-full max-w-xl grid-cols-1 gap-4 text-left sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-[#1E293B] dark:bg-[#0B0F19]/60">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6366F1]">
-              01 · Precision
-            </span>
-            <p className="mt-1.5 text-sm font-semibold text-slate-900 dark:text-white">
-              Strict ATS Score
-            </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-[#94A3B8]">
-              Zero score inflation with must-have gap penalties.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-[#1E293B] dark:bg-[#0B0F19]/60">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#22D3EE]">
-              02 · Evidence
-            </span>
-            <p className="mt-1.5 text-sm font-semibold text-slate-900 dark:text-white">
-              Verbatim Quotes
-            </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-[#94A3B8]">
-              Every matched skill backed by exact resume lines.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-[#1E293B] dark:bg-[#0B0F19]/60">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8B5CF6]">
-              03 · Actionable
-            </span>
-            <p className="mt-1.5 text-sm font-semibold text-slate-900 dark:text-white">
-              Rewrite &amp; Prep
-            </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-[#94A3B8]">
-              Tailored 3-line summary and gap interview questions.
-            </p>
-          </div>
-        </div>
 
         <button
           type="button"
-          onClick={onLoadFullDemo}
+          onClick={onScrollToApiKey}
           className="mt-7 inline-flex h-12 items-center gap-2.5 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] px-6 text-[15px] font-semibold text-white shadow-[0_8px_28px_rgba(99,102,241,0.35)] hover:scale-[1.02] transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]"
         >
-          <Sparkles className="h-4.5 w-4.5" aria-hidden="true" />
-          <span>Load Sample Resume &amp; JD</span>
+          <KeyRound className="h-4.5 w-4.5" aria-hidden="true" />
+          <span>Add API Key</span>
         </button>
       </section>
     );
@@ -391,9 +324,8 @@ export function ResultsDashboard({
         </div>
       </div>
 
-      {/* TAB 1: OVERVIEW (Always visible when activeTab === 'overview', and included in print) */}
+      {/* TAB 1: OVERVIEW */}
       <div className={activeTab === 'overview' ? 'space-y-5' : 'hidden print-only-block space-y-5'}>
-        {/* Score Gauge + Breakdown Bars Card */}
         <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85 dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-0.5">
           <div className="grid gap-8 md:grid-cols-12 items-center">
             <div className="md:col-span-5 flex justify-center">
@@ -422,7 +354,6 @@ export function ResultsDashboard({
           </div>
         </section>
 
-        {/* Recruiter Verdict Card */}
         <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85 dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-0.5">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#6366F1]/15 text-[#6366F1]">
@@ -437,7 +368,6 @@ export function ResultsDashboard({
           </p>
         </section>
 
-        {/* Strengths vs Weaknesses Comparison */}
         <div className="grid gap-5 md:grid-cols-2">
           <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85 dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-0.5">
             <div className="flex items-center gap-2.5 mb-3">
@@ -490,7 +420,6 @@ export function ResultsDashboard({
           </section>
         </div>
 
-        {/* Optimized Summary Box */}
         <section className="print-card rounded-[20px] border border-[#6366F1]/35 bg-gradient-to-br from-[#6366F1]/10 via-[#8B5CF6]/10 to-[#22D3EE]/10 p-6 backdrop-blur-xl dark:bg-[#111827]/90 transition-all duration-300 hover:-translate-y-0.5">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-2.5">
@@ -529,7 +458,6 @@ export function ResultsDashboard({
 
       {/* TAB 2: SKILLS */}
       <div className={activeTab === 'skills' ? 'space-y-5' : 'hidden print-only-block space-y-5'}>
-        {/* Quick Skill Chips Strip */}
         <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#22D3EE]/15 text-[#0284C7] dark:text-[#22D3EE]">
@@ -562,9 +490,7 @@ export function ResultsDashboard({
           </div>
         </section>
 
-        {/* Two-Column Matched vs Missing Cards */}
         <div className="grid gap-5 md:grid-cols-2">
-          {/* Matched Skills */}
           <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85">
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2.5">
@@ -610,7 +536,6 @@ export function ResultsDashboard({
             )}
           </section>
 
-          {/* Missing Skills */}
           <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85">
             <div className="flex items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2.5">
@@ -661,7 +586,6 @@ export function ResultsDashboard({
           </section>
         </div>
 
-        {/* Partial Skills */}
         <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85">
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2.5">
@@ -703,7 +627,6 @@ export function ResultsDashboard({
 
       {/* TAB 3: ATS & IMPROVEMENTS */}
       <div className={activeTab === 'ats' ? 'space-y-5' : 'hidden print-only-block space-y-5'}>
-        {/* ATS Issues */}
         <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85 transition-all duration-300 hover:-translate-y-0.5">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F59E0B]/15 text-[#F59E0B]">
@@ -736,7 +659,6 @@ export function ResultsDashboard({
           )}
         </section>
 
-        {/* Improvement Suggestions */}
         <section className="print-card rounded-[20px] border border-slate-200 bg-white/90 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/85 transition-all duration-300 hover:-translate-y-0.5">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#6366F1]/15 text-[#6366F1]">
