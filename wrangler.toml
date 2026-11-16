@@ -1,8 +1,0 @@
-name = "resumerank-ai"
-compatibility_date = "2024-11-01"
-pages_build_output_dir = "dist"
-
-# Configure secrets in Cloudflare with:
-#   npx wrangler pages secret put GROQ_API_KEY
-# Optional fallback:
-#   npx wrangler pages secret put GEMINI_API_KEY

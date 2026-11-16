@@ -230,6 +230,46 @@ ${resumeText.slice(0, 28000)}
 """`;
 }
 
+async function discoverGroqChatModel(apiKey: string): Promise<string | null> {
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    if (!res.ok) return null;
+    const payload = (await res.json()) as {
+      data?: Array<{ id?: string; active?: boolean }>;
+    };
+    const candidates = (payload.data ?? [])
+      .filter((m) => m.active !== false && typeof m.id === 'string')
+      .map((m) => m.id as string)
+      .filter((id) => !/whisper|tts|guard|safeguard|orpheus|playai/i.test(id));
+
+    if (candidates.length === 0) return null;
+
+    const preferenceOrder = [
+      /llama-3\.3-70b/i,
+      /llama-4/i,
+      /llama3-70b/i,
+      /llama-3\.1-70b/i,
+      /openai\/gpt-oss-120b/i,
+      /openai\/gpt-oss-20b/i,
+      /qwen/i,
+      /llama-3\.1-8b/i,
+      /llama3-8b/i,
+      /mixtral/i,
+      /gemma/i,
+    ];
+
+    for (const pattern of preferenceOrder) {
+      const match = candidates.find((id) => pattern.test(id));
+      if (match) return match;
+    }
+    return candidates[0];
+  } catch {
+    return null;
+  }
+}
+
 async function analyzeWithGroq(apiKey: string, userPrompt: string) {
   const sendGroqRequest = async (model: string) =>
     fetch(GROQ_ENDPOINT, {
@@ -276,6 +316,12 @@ async function analyzeWithGroq(apiKey: string, userPrompt: string) {
     }
     if (response.status === 401 || response.status === 403) {
       throw new Error('Server Groq API Key is invalid. Please contact admin.');
+    }
+    if (response.status === 404) {
+      const discoveredModel = await discoverGroqChatModel(apiKey);
+      if (discoveredModel && discoveredModel !== GROQ_PRIMARY_MODEL && discoveredModel !== GROQ_FALLBACK_MODEL) {
+        response = await sendGroqRequest(discoveredModel);
+      }
     }
     if (!response.ok) {
       const errBody = await response.text();
