@@ -1,26 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle2, X } from 'lucide-react';
-import { ApiKeyCard } from './components/ApiKeyCard';
 import { Header } from './components/Header';
 import { HistorySidebar } from './components/HistorySidebar';
 import { InputPanel } from './components/InputPanel';
 import { ResultsDashboard } from './components/ResultsDashboard';
 import type { HistoryEntry, JobRole, ResumeAnalysisResult } from './types/analysis';
-import { analyzeResumeWithGemini } from './utils/geminiClient';
 import { extractTextFromPdf, validatePdfFile } from './utils/pdfExtractor';
 
-const API_KEY_STORAGE_KEY = 'gemini_api_key';
 const HISTORY_STORAGE_KEY = 'resumerank_history_v1';
 const THEME_STORAGE_KEY = 'resumerank_theme_v1';
 const MAX_HISTORY_ITEMS = 3;
-
-function loadSavedApiKey(): string {
-  try {
-    return localStorage.getItem(API_KEY_STORAGE_KEY) ?? '';
-  } catch {
-    return '';
-  }
-}
 
 function loadSavedHistory(): HistoryEntry[] {
   try {
@@ -45,14 +34,6 @@ function loadSavedTheme(): boolean {
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(loadSavedTheme);
-
-  // API Key state (loaded from localStorage "gemini_api_key", never hardcoded)
-  const [savedApiKey, setSavedApiKey] = useState<string>(loadSavedApiKey);
-  const [apiKeyInput, setApiKeyInput] = useState<string>(loadSavedApiKey);
-  const [highlightApiKeyError, setHighlightApiKeyError] = useState<boolean>(false);
-
-  const apiKeyCardRef = useRef<HTMLElement | null>(null);
-  const apiKeyInputRef = useRef<HTMLInputElement | null>(null);
 
   // Toast notifications
   const [toast, setToast] = useState<{
@@ -99,44 +80,6 @@ export default function App() {
 
   const showToast = (type: 'error' | 'success', message: string) => {
     setToast({ type, message });
-  };
-
-  const scrollToApiKeyBox = (focusInput = true) => {
-    apiKeyCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (focusInput) {
-      setTimeout(() => apiKeyInputRef.current?.focus(), 350);
-    }
-  };
-
-  const handleSaveApiKey = () => {
-    const trimmed = apiKeyInput.trim();
-    if (!trimmed) {
-      setHighlightApiKeyError(true);
-      showToast('error', 'Please paste a Gemini API Key before saving.');
-      return;
-    }
-    try {
-      localStorage.setItem(API_KEY_STORAGE_KEY, trimmed);
-    } catch {
-      // Ignore storage errors
-    }
-    setSavedApiKey(trimmed);
-    setApiKeyInput(trimmed);
-    setHighlightApiKeyError(false);
-    setErrorMessage(null);
-    showToast('success', 'Gemini API Key saved locally.');
-  };
-
-  const handleClearApiKey = () => {
-    try {
-      localStorage.removeItem(API_KEY_STORAGE_KEY);
-    } catch {
-      // Ignore storage errors
-    }
-    setSavedApiKey('');
-    setApiKeyInput('');
-    setHighlightApiKeyError(false);
-    showToast('success', 'Gemini API Key cleared.');
   };
 
   const persistHistory = (items: HistoryEntry[]) => {
@@ -202,28 +145,7 @@ export default function App() {
 
   const handleAnalyze = async () => {
     setErrorMessage(null);
-    setHighlightApiKeyError(false);
 
-    // Step 1: Verify real user API key exists
-    const activeKey = apiKeyInput.trim() || savedApiKey.trim();
-    if (!activeKey) {
-      setHighlightApiKeyError(true);
-      showToast('error', 'Please add your Gemini API Key first');
-      scrollToApiKeyBox(true);
-      return;
-    }
-
-    // Persist entered key if user clicked Analyze immediately after pasting
-    if (activeKey !== savedApiKey) {
-      setSavedApiKey(activeKey);
-      try {
-        localStorage.setItem(API_KEY_STORAGE_KEY, activeKey);
-      } catch {
-        // Ignore storage errors
-      }
-    }
-
-    // Step 2: Verify PDF uploaded and JD pasted
     if (!resumeText.trim()) {
       const msg = 'Please upload resume PDF';
       setErrorMessage(msg);
@@ -238,20 +160,29 @@ export default function App() {
       return;
     }
 
-    // Step 3 & 4: Call real Gemini API with loading state
     setIsAnalyzing(true);
     setActiveHistoryId(null);
 
     try {
-      const result = await analyzeResumeWithGemini({
-        apiKey: activeKey,
-        resumeText,
-        jobDescription,
-        jobRole,
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resumeText,
+          jobDescription,
+          targetRole: jobRole,
+        }),
       });
 
-      // Step 5: Render ONLY real data returned by Gemini
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || `Analysis failed with status ${response.status}.`);
+      }
+
+      const result = data as ResumeAnalysisResult;
       const resolvedFileName = fileName ?? 'resume.pdf';
+
       setAnalysisResult(result);
       setActiveFileNameForResult(resolvedFileName);
       setActiveJobRoleForResult(jobRole);
@@ -273,13 +204,9 @@ export default function App() {
       const msg =
         err instanceof Error
           ? err.message
-          : 'Gemini API request failed. Please verify your API Key and try again.';
+          : 'Unable to complete AI analysis. Please try again.';
       setErrorMessage(msg);
       showToast('error', msg);
-      if (msg.toLowerCase().includes('invalid api key')) {
-        setHighlightApiKeyError(true);
-        scrollToApiKeyBox(false);
-      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -315,11 +242,9 @@ export default function App() {
   return (
     <div className="saas-mesh-bg flex min-h-screen flex-col text-[#334155] dark:text-[#CBD5E1]">
       <Header
-        hasApiKey={savedApiKey.trim().length > 0}
         isDarkMode={isDarkMode}
         onToggleTheme={() => setIsDarkMode((prev) => !prev)}
         onNewAnalysis={handleReset}
-        onJumpToApiKey={() => scrollToApiKeyBox(true)}
       />
 
       {/* Toast Notification */}
@@ -365,7 +290,7 @@ export default function App() {
                 Your Resume, Ranked by AI
               </h1>
               <p className="mt-2 max-w-xl text-[15px] leading-[1.6] text-[#64748B] dark:text-[#94A3B8]">
-                Connect your Gemini API Key, upload your PDF resume, and evaluate against any real job description.
+                Upload your PDF resume and paste any job description for instant ATS scoring, skill proof, and optimization.
               </p>
             </div>
 
@@ -390,23 +315,6 @@ export default function App() {
             </div>
           </div>
         </section>
-
-        {/* Prominent Dedicated API Key Section at TOP of Page */}
-        <ApiKeyCard
-          ref={apiKeyCardRef}
-          apiKeyInput={apiKeyInput}
-          savedApiKey={savedApiKey}
-          highlightError={highlightApiKeyError}
-          inputRef={apiKeyInputRef}
-          onApiKeyInputChange={(val) => {
-            setApiKeyInput(val);
-            if (highlightApiKeyError && val.trim()) {
-              setHighlightApiKeyError(false);
-            }
-          }}
-          onSaveKey={handleSaveApiKey}
-          onClearKey={handleClearApiKey}
-        />
 
         {/* Main 2-Column SaaS Grid: Left Input + History (420px) | Right Results (1fr) */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr] items-start">
@@ -445,7 +353,6 @@ export default function App() {
               fileName={activeFileNameForResult ?? fileName}
               jobRole={activeJobRoleForResult}
               onReset={handleReset}
-              onScrollToApiKey={() => scrollToApiKeyBox(true)}
             />
           </div>
         </div>
@@ -453,7 +360,7 @@ export default function App() {
 
       <footer className="no-print border-t-[1.5px] border-slate-300 bg-white/80 py-6 text-center text-xs font-medium text-[#64748B] dark:border-slate-700 dark:bg-transparent dark:text-[#94A3B8]">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-          Built with Google Gemini AI | Hybrid NLP + LLM Approach
+          Powered by Groq AI - No API Key Required
         </div>
       </footer>
     </div>

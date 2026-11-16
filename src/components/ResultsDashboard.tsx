@@ -10,7 +10,6 @@ import {
   FileSearch,
   FileWarning,
   HelpCircle,
-  KeyRound,
   Layers,
   Lightbulb,
   MessageSquareQuote,
@@ -31,7 +30,6 @@ interface ResultsDashboardProps {
   fileName: string | null;
   jobRole: JobRole;
   onReset: () => void;
-  onScrollToApiKey: () => void;
 }
 
 type ResultsTab = 'overview' | 'skills' | 'ats' | 'interview';
@@ -80,7 +78,6 @@ export function ResultsDashboard({
   fileName,
   jobRole,
   onReset,
-  onScrollToApiKey,
 }: ResultsDashboardProps) {
   const [activeTab, setActiveTab] = useState<ResultsTab>('overview');
   const [copiedReport, setCopiedReport] = useState(false);
@@ -132,7 +129,7 @@ export function ResultsDashboard({
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-display text-[18px] font-bold tracking-[-0.02em] text-[#0F172A] dark:text-white">
-                  Calling Gemini AI
+                  Groq AI is analyzing... (Super Fast)
                 </p>
                 <span className="inline-flex items-center gap-1 pt-1" aria-hidden="true">
                   <span className="typing-dot-1 h-1.5 w-1.5 rounded-full bg-[#0284C7] dark:bg-[#22D3EE]" />
@@ -141,7 +138,7 @@ export function ResultsDashboard({
                 </span>
               </div>
               <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
-                Evaluating your resume and job description with live Gemini intelligence
+                Powered by Groq - Llama 3.3 70B · Evaluating skills, ATS compliance, and fit
               </p>
             </div>
           </div>
@@ -190,17 +187,8 @@ export function ResultsDashboard({
           No Analysis Yet
         </h2>
         <p className="mt-3 max-w-md text-[15px] leading-[1.6] text-[#64748B] dark:text-[#94A3B8]">
-          Add your API Key, upload resume, paste JD and click Analyze to see real AI results
+          Upload your PDF resume, paste a Job Description on the left, and click Analyze with AI to see real AI results.
         </p>
-
-        <button
-          type="button"
-          onClick={onScrollToApiKey}
-          className="mt-7 inline-flex h-12 items-center gap-2.5 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] px-6 text-[15px] font-semibold text-white shadow-[0_8px_28px_rgba(99,102,241,0.35)] hover:scale-[1.02] transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]"
-        >
-          <KeyRound className="h-4.5 w-4.5" aria-hidden="true" />
-          <span>Add API Key</span>
-        </button>
       </section>
     );
   }

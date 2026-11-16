@@ -1,24 +1,16 @@
 import { Moon, RotateCcw, Sun } from 'lucide-react';
 
 interface HeaderProps {
-  hasApiKey: boolean;
   isDarkMode: boolean;
   onToggleTheme: () => void;
   onNewAnalysis: () => void;
-  onJumpToApiKey: () => void;
 }
 
-export function Header({
-  hasApiKey,
-  isDarkMode,
-  onToggleTheme,
-  onNewAnalysis,
-  onJumpToApiKey,
-}: HeaderProps) {
+export function Header({ isDarkMode, onToggleTheme, onNewAnalysis }: HeaderProps) {
   return (
     <header className="no-print sticky top-0 z-40 h-[72px] border-b-[1.5px] border-slate-300 bg-white/95 backdrop-blur-xl dark:border-slate-700 dark:bg-[#0B0F19]/80">
       <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between gap-4 px-4 lg:px-8">
-        {/* Left: Brand Mark + Wordmark */}
+        {/* Left: Logo */}
         <a
           href="#workspace"
           className="flex items-center gap-3 whitespace-nowrap shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]"
@@ -46,28 +38,8 @@ export function Header({
           </span>
         </a>
 
-        {/* Right: Real API Key Status + Dark Mode Toggle + Reset */}
+        {/* Right: Light/Dark Toggle + New Analysis */}
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={onJumpToApiKey}
-            className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
-              hasApiKey
-                ? 'border-[#10B981]/50 bg-[#10B981]/10 text-[#059669] dark:border-[#10B981]/35 dark:text-[#10B981]'
-                : 'border-[#F43F5E]/50 bg-[#F43F5E]/10 text-[#E11D48] dark:border-[#F43F5E]/35 dark:text-[#F43F5E]'
-            }`}
-          >
-            <span
-              aria-hidden="true"
-              className={`h-2 w-2 rounded-full ${
-                hasApiKey
-                  ? 'bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.75)]'
-                  : 'bg-[#F43F5E] shadow-[0_0_8px_rgba(244,63,94,0.75)]'
-              }`}
-            />
-            <span>{hasApiKey ? 'API Key Connected' : 'No API Key'}</span>
-          </button>
-
           <button
             type="button"
             onClick={onToggleTheme}

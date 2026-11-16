@@ -304,7 +304,7 @@ export function InputPanel({
             {isAnalyzing ? (
               <>
                 <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
-                <span>Calling Gemini AI...</span>
+                <span>Groq AI is analyzing... (Super Fast)</span>
               </>
             ) : (
               <>
