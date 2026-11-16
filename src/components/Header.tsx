@@ -16,7 +16,7 @@ export function Header({
   onJumpToApiKey,
 }: HeaderProps) {
   return (
-    <header className="no-print sticky top-0 z-40 h-[72px] border-b border-slate-200/80 bg-white/80 backdrop-blur-xl dark:border-[#1E293B] dark:bg-[#0B0F19]/80">
+    <header className="no-print sticky top-0 z-40 h-[72px] border-b-[1.5px] border-slate-300 bg-white/95 backdrop-blur-xl dark:border-slate-700 dark:bg-[#0B0F19]/80">
       <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between gap-4 px-4 lg:px-8">
         {/* Left: Brand Mark + Wordmark */}
         <a
@@ -41,8 +41,8 @@ export function Header({
               <path d="m9 15 2 2 4-4" />
             </svg>
           </span>
-          <span className="font-display text-lg font-bold tracking-[-0.02em] text-slate-900 dark:text-white">
-            ResumeRank <span className="text-[#22D3EE]">AI</span>
+          <span className="font-display text-lg font-bold tracking-[-0.02em] text-[#0F172A] dark:text-white">
+            ResumeRank <span className="text-[#0284C7] dark:text-[#22D3EE]">AI</span>
           </span>
         </a>
 
@@ -53,8 +53,8 @@ export function Header({
             onClick={onJumpToApiKey}
             className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
               hasApiKey
-                ? 'border-[#10B981]/35 bg-[#10B981]/10 text-[#059669] dark:text-[#10B981]'
-                : 'border-[#F43F5E]/35 bg-[#F43F5E]/10 text-[#E11D48] dark:text-[#F43F5E]'
+                ? 'border-[#10B981]/50 bg-[#10B981]/10 text-[#059669] dark:border-[#10B981]/35 dark:text-[#10B981]'
+                : 'border-[#F43F5E]/50 bg-[#F43F5E]/10 text-[#E11D48] dark:border-[#F43F5E]/35 dark:text-[#F43F5E]'
             }`}
           >
             <span
@@ -72,7 +72,7 @@ export function Header({
             type="button"
             onClick={onToggleTheme}
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-semibold text-slate-700 hover:scale-[1.02] hover:border-slate-300 dark:border-[#1E293B] dark:bg-[#111827] dark:text-[#CBD5E1] dark:hover:border-[#6366F1]/50 dark:hover:text-white transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-400 bg-white px-3.5 text-xs font-semibold text-[#0F172A] hover:scale-[1.02] hover:bg-slate-100 dark:border-slate-700 dark:bg-[#111827] dark:text-[#CBD5E1] dark:hover:border-[#6366F1]/50 dark:hover:text-white transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]"
           >
             {isDarkMode ? (
               <>
@@ -90,9 +90,9 @@ export function Header({
           <button
             type="button"
             onClick={onNewAnalysis}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 text-xs font-semibold text-slate-800 hover:scale-[1.02] hover:bg-slate-200 dark:border-[#1E293B] dark:bg-[#1E293B]/80 dark:text-white dark:hover:bg-[#1E293B] transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-400 bg-white px-4 text-xs font-semibold text-[#0F172A] hover:scale-[1.02] hover:bg-slate-100 dark:border-slate-700 dark:bg-[#1E293B]/80 dark:text-white dark:hover:bg-[#1E293B] transition-all duration-300 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]"
           >
-            <RotateCcw className="h-3.5 w-3.5 text-[#22D3EE]" aria-hidden="true" />
+            <RotateCcw className="h-3.5 w-3.5 text-[#0284C7] dark:text-[#22D3EE]" aria-hidden="true" />
             <span>New Analysis</span>
           </button>
         </div>

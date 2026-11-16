@@ -1,7 +1,11 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+const PRIMARY_WORKER_CDN =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const FALLBACK_WORKER_CDN =
+  'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = PRIMARY_WORKER_CDN;
 
 export const MAX_PDF_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -36,10 +40,30 @@ export function validatePdfFile(file: File): string | null {
   return null;
 }
 
+async function openPdfWithFallback(arrayBuffer: ArrayBuffer) {
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = PRIMARY_WORKER_CDN;
+    return await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
+  } catch (primaryErr) {
+    const msg = primaryErr instanceof Error ? primaryErr.message : String(primaryErr);
+    const isWorkerError =
+      msg.toLowerCase().includes('worker') ||
+      msg.toLowerCase().includes('importscripts') ||
+      msg.toLowerCase().includes('network') ||
+      msg.toLowerCase().includes('fetch');
+
+    if (!isWorkerError) {
+      throw primaryErr;
+    }
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = FALLBACK_WORKER_CDN;
+    return await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
+  }
+}
+
 export async function extractTextFromPdf(file: File): Promise<ExtractedPdfResult> {
   const arrayBuffer = await file.arrayBuffer();
-  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-  const pdf = await loadingTask.promise;
+  const pdf = await openPdfWithFallback(arrayBuffer);
 
   const pageTexts: string[] = [];
 

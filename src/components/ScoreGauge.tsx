@@ -68,7 +68,7 @@ export function ScoreGauge({ score, verdict }: ScoreGaugeProps) {
   return (
     <div className="flex flex-col items-center">
       <div
-        className={`relative flex h-[180px] w-[180px] items-center justify-center rounded-full bg-slate-100/70 dark:bg-[#0B0F19]/80 ${ambientGlow}`}
+        className={`relative flex h-[180px] w-[180px] items-center justify-center rounded-full border border-slate-300 bg-white dark:border-slate-700/60 dark:bg-[#0B0F19]/80 ${ambientGlow}`}
       >
         <svg
           width={size}
@@ -100,7 +100,7 @@ export function ScoreGauge({ score, verdict }: ScoreGaugeProps) {
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-slate-200 dark:text-[#1E293B]"
+            className="text-slate-300 dark:text-[#1E293B]"
           />
 
           <circle
@@ -119,13 +119,13 @@ export function ScoreGauge({ score, verdict }: ScoreGaugeProps) {
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-[#94A3B8]">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#64748B] dark:text-[#94A3B8]">
             Match Score
           </span>
-          <span className="mt-1 font-score text-[48px] font-bold leading-none text-slate-900 dark:text-white print-text-dark">
+          <span className="mt-1 font-score text-[48px] font-bold leading-none text-[#0F172A] dark:text-white print-text-dark">
             {displayScore}
           </span>
-          <span className="mt-1 text-xs font-medium text-slate-500 dark:text-[#94A3B8] tabular-nums">
+          <span className="mt-1 text-xs font-medium text-[#64748B] dark:text-[#94A3B8] tabular-nums">
             out of 100
           </span>
         </div>

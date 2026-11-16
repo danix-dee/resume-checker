@@ -313,7 +313,7 @@ export default function App() {
       : null;
 
   return (
-    <div className="saas-mesh-bg flex min-h-screen flex-col text-slate-900 dark:text-[#CBD5E1]">
+    <div className="saas-mesh-bg flex min-h-screen flex-col text-[#334155] dark:text-[#CBD5E1]">
       <Header
         hasApiKey={savedApiKey.trim().length > 0}
         isDarkMode={isDarkMode}
@@ -354,33 +354,33 @@ export default function App() {
         {/* Hero Strip */}
         <section
           aria-label="Workspace overview"
-          className="no-print mb-6 rounded-[20px] border border-slate-200 bg-white/85 p-6 backdrop-blur-xl shadow-sm dark:border-[#1E293B] dark:bg-[#111827]/80 dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)]"
+          className="no-print mb-6 rounded-[20px] border-[1.5px] border-slate-300 bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-[#111827]/80 dark:backdrop-blur-xl dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)]"
         >
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#0284C7] dark:text-[#22D3EE]">
                 AI-Powered Resume Intelligence
               </p>
-              <h1 className="mt-1.5 font-display text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] bg-gradient-to-r from-slate-900 via-[#6366F1] to-[#8B5CF6] bg-clip-text text-transparent dark:from-white dark:via-[#A5B4FC] dark:to-[#22D3EE] text-balance">
+              <h1 className="mt-1.5 font-display text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] bg-gradient-to-r from-[#0F172A] via-[#6366F1] to-[#8B5CF6] bg-clip-text text-transparent dark:from-white dark:via-[#A5B4FC] dark:to-[#22D3EE] text-balance">
                 Your Resume, Ranked by AI
               </h1>
-              <p className="mt-2 max-w-xl text-[15px] leading-[1.6] text-slate-600 dark:text-[#94A3B8]">
+              <p className="mt-2 max-w-xl text-[15px] leading-[1.6] text-[#64748B] dark:text-[#94A3B8]">
                 Connect your Gemini API Key, upload your PDF resume, and evaluate against any real job description.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 shrink-0">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-5 py-3.5 dark:border-[#1E293B] dark:bg-[#0B0F19]/80">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-[#94A3B8]">
+              <div className="rounded-2xl border-[1.5px] border-slate-300 bg-[#F8FAFC] px-5 py-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-[#0B0F19]/80 dark:shadow-none">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#64748B] dark:text-[#94A3B8]">
                   Resumes Analyzed
                 </p>
-                <p className="mt-1 font-score text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
+                <p className="mt-1 font-score text-2xl font-bold text-[#0F172A] dark:text-white tabular-nums">
                   {resumesAnalyzedCount}
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-5 py-3.5 dark:border-[#1E293B] dark:bg-[#0B0F19]/80">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-[#94A3B8]">
+              <div className="rounded-2xl border-[1.5px] border-slate-300 bg-[#F8FAFC] px-5 py-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-[#0B0F19]/80 dark:shadow-none">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#64748B] dark:text-[#94A3B8]">
                   Avg Score
                 </p>
                 <p className="mt-1 font-score text-2xl font-bold text-[#6366F1] dark:text-[#22D3EE] tabular-nums">
@@ -451,7 +451,7 @@ export default function App() {
         </div>
       </main>
 
-      <footer className="no-print border-t border-slate-200/80 py-6 text-center text-xs text-slate-500 dark:border-[#1E293B] dark:text-[#94A3B8]">
+      <footer className="no-print border-t-[1.5px] border-slate-300 bg-white/80 py-6 text-center text-xs font-medium text-[#64748B] dark:border-slate-700 dark:bg-transparent dark:text-[#94A3B8]">
         <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
           Built with Google Gemini AI | Hybrid NLP + LLM Approach
         </div>
